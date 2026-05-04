@@ -1,65 +1,116 @@
-import Image from "next/image";
+"use client";
 
+import React from 'react';
+import Image from 'next/image'; // 1. Import Image
+import { ArrowRight, Hammer, ShieldCheck, Clock } from 'lucide-react';
+import Link from 'next/link';
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="min-h-screen bg-black text-white">
+      {/* HERO SECTION */}
+      <section className="relative h-[90vh] flex items-center overflow-hidden border-b border-white/10">
+        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 left-0 translate-y-1/4 -translate-x-1/4 w-[500px] h-[500px] bg-orange-600/10 rounded-full blur-[100px]" />
+
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+
+          {/* TEKS UTAMA */}
+          <div className="space-y-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/20 bg-white/5 text-xs uppercase tracking-widest text-gray-300">
+              <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+              Tersedia Layanan Survey Gratis
+            </div>
+
+            <h1 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-[0.9]">
+              Konstruksi <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">
+                Besi Presisi
+              </span>
+            </h1>
+
+            <p className="text-gray-400 text-lg md:text-xl max-w-md leading-relaxed font-light">
+              Kami mewujudkan keamanan dan estetika hunian Anda melalui pengerjaan las profesional. Spesialis Pagar, Kanopi, dan Konstruksi Baja.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button className="px-8 py-4 bg-white text-black font-bold uppercase text-sm tracking-widest hover:bg-orange-500 hover:text-white transition-all duration-300 flex items-center justify-center gap-2 group">
+                <Link href='/hitungbiaya'> Lihat Katalog</Link>
+                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              </button>
+              <button className="px-8 py-4 border border-white/20 font-bold uppercase text-sm tracking-widest hover:bg-white/10 transition-all duration-300">
+                <Link href={'https://wa.me/+6289517922319'}>Konsultasi Gratis</Link>
+              </button>
+            </div>
+          </div>
+
+          {/* VISUAL ELEMENT DENGAN FOTO */}
+          <div className="relative hidden lg:block group">
+            <div className="aspect-square border border-white/10 rounded-2xl relative overflow-hidden bg-white/5 shadow-2xl">
+
+              {/* 2. Komponen Gambar Utama */}
+              <Image
+                src="https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?q=80&w=2070"
+                alt="Workshop Bengkel Las"
+                fill
+                className="object-cover opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                priority
+              />
+
+              {/* 3. Overlay Gradient (Agar gambar menyatu dengan background hitam) */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
+
+              {/* Floating Card Info */}
+              <div className="absolute bottom-8 left-8 p-5 bg-black/60 backdrop-blur-md border border-white/20 rounded-xl z-20">
+                <p className="text-[10px] uppercase text-orange-500 font-bold tracking-widest mb-1">Workshop Pro</p>
+                <p className="text-2xl font-black text-white uppercase italic tracking-tighter">CV Bina Karya</p>
+                <div className="flex items-center gap-2 mt-2">
+                  <div className="h-1 w-12 bg-orange-500" />
+                  <p className="text-xs text-gray-400">Quality Assured</p>
+                </div>
+              </div>
+
+              {/* Aksen Sudut (Dekorasi) */}
+              <div className="absolute top-6 right-6 w-16 h-16 border-t-2 border-r-2 border-orange-500/30 rounded-tr-xl" />
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* KEUNGGULAN (TRUST INDICATORS) */}
+      <section className="py-20 max-w-7xl mx-auto px-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+          <div className="flex gap-4 items-start">
+            <div className="p-3 bg-white/5 border border-white/10 rounded-lg">
+              <ShieldCheck className="text-orange-500" />
+            </div>
+            <div>
+              <h3 className="font-bold uppercase tracking-tight italic">Bahan Berkualitas</h3>
+              <p className="text-gray-500 text-sm mt-1">Menggunakan besi SNI dan cat anti karat terbaik.</p>
+            </div>
+          </div>
+          <div className="flex gap-4 items-start">
+            <div className="p-3 bg-white/5 border border-white/10 rounded-lg">
+              <Clock className="text-orange-500" />
+            </div>
+            <div>
+              <h3 className="font-bold uppercase tracking-tight italic">Tepat Waktu</h3>
+              <p className="text-gray-500 text-sm mt-1">Pengerjaan disiplin sesuai kesepakatan kontrak.</p>
+            </div>
+          </div>
+          <div className="flex gap-4 items-start">
+            <div className="p-3 bg-white/5 border border-white/10 rounded-lg">
+              <Hammer className="text-orange-500" />
+            </div>
+            <div>
+              <h3 className="font-bold uppercase tracking-tight italic">Tenaga Ahli</h3>
+              <p className="text-gray-500 text-sm mt-1">Dikerjakan oleh teknisi las bersertifikat.</p>
+            </div>
+          </div>
         </div>
-      </main>
-    </div>
+      </section>
+
+      {/* SECTION KATALOG PRODUK TETAP DI BAWAH SINI ... */}
+
+    </main>
   );
 }
