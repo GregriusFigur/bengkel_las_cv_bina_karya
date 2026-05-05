@@ -13,19 +13,37 @@ export default function AdminDashboard() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const router = useRouter();
+    const [activeTab, setActiveTab] = useState('products');
+    const [orders, setOrders] = useState([]);
 
-    // Form State
-    // Tambahkan state baru di AdminDashboard
+    // Form State mencakup Kategori dan Keterangan
+    const [formData, setFormData] = useState({
+        id: '',
+        name: '',
+        category: 'Kanopi',
+        price: '',
+        description: '',
+        image: ''
+    });
+
+    // Inisialisasi data saat halaman dimuat
+    useEffect(() => {
+        const isLoggedIn = document.cookie.includes('isLoggedIn=true');
+        if (!isLoggedIn) {
+            router.push('/login');
+        } else {
+            fetchProducts();
+            fetchOrders();
+        }
+    }, [router]);
+
     const fetchOrders = async () => {
         try {
             const res = await fetch('/api/orders');
             const data = await res.json();
-
-            // Cek apakah data yang datang adalah Array
             if (Array.isArray(data)) {
                 setOrders(data);
             } else {
-                // Jika bukan array (misal: objek error), set sebagai array kosong
                 console.error("API tidak mengembalikan array:", data);
                 setOrders([]);
             }
@@ -35,26 +53,17 @@ export default function AdminDashboard() {
         }
     };
 
-    const [formData, setFormData] = useState({
-        id: '', name: '', category: 'Kanopi',
-        price: '', description: '', image: ''
-    });
-
-    useEffect(() => {
-        const isLoggedIn = document.cookie.includes('isLoggedIn=true');
-        if (!isLoggedIn) {
-            router.push('/login');
-        } else {
-            fetchProducts();
-        }
-    }, [router]);
-
     const fetchProducts = async () => {
         setLoading(true);
-        const res = await fetch('/api/products');
-        const data = await res.json();
-        setProducts(data);
-        setLoading(false);
+        try {
+            const res = await fetch('/api/products');
+            const data = await res.json();
+            setProducts(Array.isArray(data) ? data : []);
+        } catch (error) {
+            console.error("Gagal fetch produk:", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const openAddModal = () => {
@@ -93,11 +102,10 @@ export default function AdminDashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white flex font-sans">
+        <div className="min-h-screen bg-[#050505] text-white flex font-sans relative">
             {/* SIDEBAR */}
             <aside className="w-64 border-r border-white/5 bg-black p-8 flex flex-col justify-between hidden md:flex">
                 <div>
-                    {/* Logo Section */}
                     <div className="flex items-center gap-3 text-orange-500 mb-12">
                         <Database size={24} />
                         <span className="font-black uppercase tracking-tighter text-xl text-white">
@@ -105,9 +113,7 @@ export default function AdminDashboard() {
                         </span>
                     </div>
 
-                    {/* Navigation Section */}
                     <nav className="space-y-2">
-                        {/* Tombol Dashboard / Katalog */}
                         <button
                             onClick={() => setActiveTab('products')}
                             className={`w-full px-4 py-3 flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${activeTab === 'products'
@@ -119,7 +125,6 @@ export default function AdminDashboard() {
                             <span>Dashboard</span>
                         </button>
 
-                        {/* Tombol Pesanan Masuk */}
                         <button
                             onClick={() => setActiveTab('orders')}
                             className={`w-full px-4 py-3 flex items-center justify-between text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${activeTab === 'orders'
@@ -131,8 +136,6 @@ export default function AdminDashboard() {
                                 <Database size={16} />
                                 <span>Pesanan</span>
                             </div>
-
-                            {/* Badge Notifikasi */}
                             {orders.length > 0 && (
                                 <span className="bg-orange-500 text-black px-1.5 py-0.5 rounded-full text-[8px] font-bold animate-pulse">
                                     {orders.length}
@@ -142,7 +145,6 @@ export default function AdminDashboard() {
                     </nav>
                 </div>
 
-                {/* Logout Section */}
                 <button
                     onClick={() => {
                         document.cookie = "isLoggedIn=; path=/;";
@@ -166,7 +168,6 @@ export default function AdminDashboard() {
                         </p>
                     </div>
 
-                    {/* Tombol Tambah Varian hanya muncul jika di tab Produk */}
                     {activeTab === 'products' && (
                         <button onClick={openAddModal} className="bg-orange-500 text-black px-8 py-4 font-black uppercase text-[10px] tracking-widest flex items-center gap-2 hover:bg-white transition-all shadow-xl">
                             <Plus size={16} /> Tambah Varian
@@ -174,7 +175,7 @@ export default function AdminDashboard() {
                     )}
                 </header>
 
-                {/* KONTEN TAB: PRODUK */}
+                {/* TAB PRODUK */}
                 {activeTab === 'products' && (
                     <div className="bg-[#0a0a0a] border border-white/5 rounded-sm">
                         <table className="w-full text-left border-collapse">
@@ -206,7 +207,7 @@ export default function AdminDashboard() {
                                             <span className="text-[10px] font-bold text-gray-400 uppercase border border-white/10 px-2 py-1">{item.category}</span>
                                         </td>
                                         <td className="p-6 font-black text-white text-sm italic">Rp {Number(item.price).toLocaleString('id-ID')}</td>
-                                        <td className="p-6">
+                                        <td className="p-6 text-right">
                                             <div className="flex justify-end gap-2">
                                                 <button onClick={() => openEditModal(item)} className="p-2 bg-white/5 text-gray-400 hover:text-orange-500 transition-colors"><Edit3 size={16} /></button>
                                                 <button onClick={() => handleDelete(item.id)} className="p-2 bg-white/5 text-gray-400 hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
@@ -219,7 +220,7 @@ export default function AdminDashboard() {
                     </div>
                 )}
 
-                {/* KONTEN TAB: PESANAN */}
+                {/* TAB PESANAN */}
                 {activeTab === 'orders' && (
                     <div className="bg-[#0a0a0a] border border-white/5 rounded-sm overflow-hidden">
                         <table className="w-full text-left border-collapse">
@@ -263,6 +264,92 @@ export default function AdminDashboard() {
                     </div>
                 )}
             </main>
+
+            {/* MODAL FORM TAMBAH/EDIT */}
+            {isModalOpen && (
+                <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-[#0a0a0a] border border-white/10 w-full max-w-md p-8 relative shadow-2xl">
+                        <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
+                            <X size={20} />
+                        </button>
+
+                        <h2 className="text-2xl font-black uppercase italic mb-6 tracking-tighter">
+                            {isEditMode ? 'Edit' : 'Tambah'} <span className="text-orange-500">Varian</span>
+                        </h2>
+
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            {/* Nama */}
+                            <div>
+                                <label className="text-[9px] uppercase font-bold text-gray-500 tracking-widest">Nama Produk</label>
+                                <input
+                                    type="text" required
+                                    placeholder="Contoh: Kanopi Atap Alderon"
+                                    className="w-full bg-white/5 border border-white/10 p-3 mt-1 text-sm focus:outline-none focus:border-orange-500 transition-colors"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                {/* Kategori */}
+                                <div>
+                                    <label className="text-[9px] uppercase font-bold text-gray-500 tracking-widest">Kategori</label>
+                                    <select
+                                        className="w-full bg-[#111111] text-white border border-white/10 p-3 mt-1 text-sm focus:outline-none focus:border-orange-500 appearance-none cursor-pointer"
+                                        value={formData.category}
+                                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                    >
+                                        {/* Tambahkan gaya bg-zinc-900 pada option agar teks putih terlihat kontras saat dropdown terbuka */}
+                                        <option value="Kanopi" className="bg-zinc-900 text-white">Kanopi</option>
+                                        <option value="Pagar" className="bg-zinc-900 text-white">Pagar</option>
+                                        <option value="Tralis" className="bg-zinc-900 text-white">Tralis</option>
+                                        <option value="Pintu Besi" className="bg-zinc-900 text-white">Pintu Besi</option>
+                                    </select>
+                                </div>
+                                {/* Harga */}
+                                <div>
+                                    <label className="text-[9px] uppercase font-bold text-gray-500 tracking-widest">Harga /m²</label>
+                                    <input
+                                        type="number" required
+                                        placeholder="0"
+                                        className="w-full bg-white/5 border border-white/10 p-3 mt-1 text-sm focus:outline-none focus:border-orange-500"
+                                        value={formData.price}
+                                        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Keterangan Produk */}
+                            <div>
+                                <label className="text-[9px] uppercase font-bold text-gray-500 tracking-widest">Keterangan Produk</label>
+                                <textarea
+                                    rows={3}
+                                    placeholder="Spesifikasi bahan, jenis cat, dll..."
+                                    className="w-full bg-white/5 border border-white/10 p-3 mt-1 text-sm focus:outline-none focus:border-orange-500 resize-none"
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                />
+                            </div>
+
+                            {/* URL Gambar */}
+                            <div>
+                                <label className="text-[10px] uppercase font-bold text-gray-500 tracking-widest">URL Gambar</label>
+                                <input
+                                    type="text" required
+                                    placeholder="https://..."
+                                    className="w-full bg-white/5 border border-white/10 p-3 mt-1 text-sm font-mono text-[15px] focus:outline-none focus:border-orange-500"
+                                    value={formData.image}
+                                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                                />
+                            </div>
+
+                            <button type="submit" className="w-full bg-orange-500 text-black py-4 font-black uppercase text-[10px] tracking-[0.2em] hover:bg-white transition-colors mt-4 flex items-center justify-center gap-2">
+                                <Save size={16} /> {isEditMode ? 'Simpan Perubahan' : 'Tambahkan Produk'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
