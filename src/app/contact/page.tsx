@@ -119,12 +119,12 @@ export default function ContactPage() {
 
                                 <div className="space-y-2">
                                     <label className="text-[10px] uppercase font-bold text-gray-500 tracking-widest">Kategori Kebutuhan</label>
-                                    <select className="w-full bg-black border border-white/10 p-4 text-sm focus:outline-none focus:border-orange-500 transition-colors appearance-none">
+                                    <search className="w-full bg-black border border-white/10 p-4 text-sm focus:outline-none focus:border-orange-500 transition-colors appearance-none">
                                         <option>Konsultasi Kanopi</option>
                                         <option>Pemesanan Pagar</option>
                                         <option>Teralis & Pintu Besi</option>
                                         <option>Lainnya</option>
-                                    </select>
+                                    </search>
                                 </div>
 
                                 <div className="space-y-2">
