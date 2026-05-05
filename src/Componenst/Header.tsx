@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { LogIn } from 'lucide-react'; // Menggunakan ikon untuk estetika profesional
 
 const Header = () => {
   return (
@@ -42,14 +43,17 @@ const Header = () => {
           </Link>
         </div>
 
-        {/* BAGIAN KANAN: CALL TO ACTION (OPSIONAL AGAR SEIMBANG) */}
+        {/* BAGIAN KANAN: LOGIN BUTTON (Menggantikan Teks Profesional) */}
         <div className="hidden md:block">
-          <div className="text-[10px] text-gray-500 uppercase tracking-widest">
-            Bengkel Las Profesional
-          </div>
+          <Link href="/login">
+            <button className="flex items-center gap-2 px-5 py-2.5 bg-orange-500 text-black text-[10px] font-black uppercase tracking-[0.15em] hover:bg-white transition-all duration-300 rounded-sm shadow-[0_0_15px_rgba(249,115,22,0.3)]">
+              <LogIn size={14} />
+              Login Admin
+            </button>
+          </Link>
         </div>
 
-        {/* MOBILE MENU (Hanya muncul di HP) */}
+        {/* MOBILE MENU (Tetap Ada) */}
         <div className="md:hidden text-white">
           <button className="p-2 border border-white/50 rounded">
             Menu

@@ -40,6 +40,42 @@ function KalkulatorContent() {
 
   // State utama (disesuaikan)
   const [category, setCategory] = useState<string>('Kanopi'); // Gunakan string biasa dulu
+
+  // Tambahkan state di dalam KalkulatorContent
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleOrder = async () => {
+    if (!selectedVariant || panjang <= 0 || lebar <= 0) {
+      alert("Mohon lengkapi data pesanan");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nama_produk: selectedVariant.name,
+          kategori: category,
+          panjang: panjang,
+          lebar: lebar,
+          luas: panjang * lebar,
+          total_harga: total
+        })
+      });
+
+      if (res.ok) {
+        alert("Pesanan berhasil dikirim ke Admin!");
+        // Opsional: Lanjut ke WhatsApp
+        window.open(`https://wa.me/628xxx?text=Halo Admin, saya memesan ${selectedVariant.name}...`, '_blank');
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   // selectedVariant awalnya null, akan diisi setelah data loading selesai
   const [selectedVariant, setSelectedVariant] = useState<Product | null>(null);
   const [panjang, setPanjang] = useState<number>(0);
@@ -311,8 +347,12 @@ function KalkulatorContent() {
                 </div>
               </div>
 
-              <button className="w-full mt-8 py-5 bg-orange-500 text-black font-black uppercase text-xs tracking-[0.2em] hover:bg-white transition-all flex items-center justify-center gap-2 group">
-                Kirim via WhatsApp
+              <button
+                onClick={handleOrder}
+                disabled={isSubmitting}
+                className="w-full mt-8 py-5 bg-orange-500 text-black font-black uppercase text-xs tracking-[0.2em] hover:bg-white transition-all flex items-center justify-center gap-2 group"
+              >
+                {isSubmitting ? 'Mengirim...' : 'Buat Pesanan & Kirim WhatsApp'}
                 <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
