@@ -16,7 +16,7 @@ export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState('products');
     const [orders, setOrders] = useState([]);
 
-    // Form State mencakup Kategori dan Keterangan
+    // Form State
     const [formData, setFormData] = useState({
         id: '',
         name: '',
@@ -26,7 +26,6 @@ export default function AdminDashboard() {
         image: ''
     });
 
-    // Inisialisasi data saat halaman dimuat
     useEffect(() => {
         const isLoggedIn = document.cookie.includes('isLoggedIn=true');
         if (!isLoggedIn) {
@@ -37,22 +36,7 @@ export default function AdminDashboard() {
         }
     }, [router]);
 
-    const fetchOrders = async () => {
-        try {
-            const res = await fetch('/api/orders');
-            const data = await res.json();
-            if (Array.isArray(data)) {
-                setOrders(data);
-            } else {
-                console.error("API tidak mengembalikan array:", data);
-                setOrders([]);
-            }
-        } catch (error) {
-            console.error("Gagal fetch data:", error);
-            setOrders([]);
-        }
-    };
-
+    // --- FETCH DATA FUNCTIONS ---
     const fetchProducts = async () => {
         setLoading(true);
         try {
@@ -66,16 +50,57 @@ export default function AdminDashboard() {
         }
     };
 
-    const openAddModal = () => {
-        setIsEditMode(false);
-        setFormData({ id: '', name: '', category: 'Kanopi', price: '', description: '', image: '' });
-        setIsModalOpen(true);
+    const fetchOrders = async () => {
+        try {
+            const res = await fetch('/api/orders');
+            const data = await res.json();
+            setOrders(Array.isArray(data) ? data : []);
+        } catch (error) {
+            console.error("Gagal fetch pesanan:", error);
+        }
     };
 
-    const openEditModal = (product: any) => {
-        setIsEditMode(true);
-        setFormData({ ...product });
-        setIsModalOpen(true);
+    // --- HANDLER FUNCTIONS ---
+    const handleUpdateOrderStatus = async (id: string, nextStatus: string) => {
+        try {
+            const res = await fetch('/api/orders', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, status: nextStatus }),
+            });
+
+            if (res.ok) {
+                alert("Status diperbarui!");
+                fetchOrders();
+            } else {
+                const errorData = await res.json();
+                alert(`Gagal: ${errorData.error || 'Terjadi kesalahan'}`);
+            }
+        } catch (err) {
+            console.error("Network Error:", err);
+        }
+    };
+
+    // FUNGSI HAPUS PESANAN
+    const handleDeleteOrder = async (id: string) => {
+        if (confirm('Apakah Anda yakin ingin menghapus pesanan ini secara permanen?')) {
+            try {
+                const res = await fetch(`/api/orders?id=${id}`, {
+                    method: 'DELETE',
+                });
+
+                if (res.ok) {
+                    alert("Pesanan berhasil dihapus");
+                    fetchOrders(); // Refresh daftar pesanan
+                } else {
+                    const errorData = await res.json();
+                    alert(`Gagal menghapus: ${errorData.error || 'Terjadi kesalahan'}`);
+                }
+            } catch (err) {
+                console.error("Network Error:", err);
+                alert("Terjadi kesalahan jaringan.");
+            }
+        }
     };
 
     const handleDelete = async (id: string) => {
@@ -88,7 +113,6 @@ export default function AdminDashboard() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const method = isEditMode ? 'PUT' : 'POST';
-
         const res = await fetch('/api/products', {
             method: method,
             headers: { 'Content-Type': 'application/json' },
@@ -99,6 +123,18 @@ export default function AdminDashboard() {
             setIsModalOpen(false);
             fetchProducts();
         }
+    };
+
+    const openAddModal = () => {
+        setIsEditMode(false);
+        setFormData({ id: '', name: '', category: 'Kanopi', price: '', description: '', image: '' });
+        setIsModalOpen(true);
+    };
+
+    const openEditModal = (product: any) => {
+        setIsEditMode(true);
+        setFormData({ ...product });
+        setIsModalOpen(true);
     };
 
     return (
@@ -177,7 +213,7 @@ export default function AdminDashboard() {
 
                 {/* TAB PRODUK */}
                 {activeTab === 'products' && (
-                    <div className="bg-[#0a0a0a] border border-white/5 rounded-sm">
+                    <div className="bg-[#0a0a0a] border border-white/5 rounded-sm overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="border-b border-white/5 text-[9px] uppercase font-black tracking-[0.2em] text-gray-500 bg-white/[0.02]">
@@ -222,15 +258,15 @@ export default function AdminDashboard() {
 
                 {/* TAB PESANAN */}
                 {activeTab === 'orders' && (
-                    <div className="bg-[#0a0a0a] border border-white/5 rounded-sm overflow-hidden">
+                    <div className="bg-[#0a0a0a] border border-white/5 rounded-sm overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="border-b border-white/5 text-[9px] uppercase font-black tracking-[0.2em] text-gray-500 bg-white/[0.02]">
                                     <th className="p-6">Tanggal</th>
                                     <th className="p-6">Produk</th>
-                                    <th className="p-6">Dimensi (L x P)</th>
+                                    <th className="p-6">Dimensi</th>
                                     <th className="p-6">Total Harga</th>
-                                    <th className="p-6 text-right">Status</th>
+                                    <th className="p-6 text-right">Aksi & Status</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
@@ -252,22 +288,30 @@ export default function AdminDashboard() {
                                         <td className="p-6 font-black text-white text-sm italic">
                                             Rp {Number(order.total_harga).toLocaleString('id-ID')}
                                         </td>
-                                        <select
-                                            value={order.status}
-                                            onChange={async (e) => {
-                                                const res = await fetch('/api/orders', {
-                                                    method: 'PATCH',
-                                                    body: JSON.stringify({ id: order.id, status: e.target.value })
-                                                });
-                                                if (res.ok) alert("Status diperbarui & WA terkirim!");
-                                            }}
-                                            className="bg-[#111111] text-orange-500 text-[10px] font-bold p-2 border border-white/10"
-                                        >
-                                            <option value="PENDING">PENDING</option>
-                                            <option value="DITERIMA">PESANAN DITERIMA</option>
-                                            <option value="PROSES">PROSES PENGERJAAN</option>
-                                            <option value="SELESAI">SELESAI</option>
-                                        </select>
+                                        <td className="p-6 text-right">
+                                            <div className="flex items-center justify-end gap-3">
+                                                {/* TOMBOL HAPUS PESANAN */}
+                                                <button
+                                                    onClick={() => handleDeleteOrder(order.id)}
+                                                    className="p-2 bg-white/5 text-gray-500 hover:text-red-500 transition-colors border border-white/5"
+                                                    title="Hapus Pesanan"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+
+                                                {/* UPDATE STATUS */}
+                                                <select
+                                                    value={order.status}
+                                                    onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
+                                                    className="bg-[#111111] text-orange-500 text-[10px] font-bold p-2 border border-white/10 outline-none cursor-pointer"
+                                                >
+                                                    <option value="PENDING">PENDING</option>
+                                                    <option value="DITERIMA">DITERIMA</option>
+                                                    <option value="PROSES">PROSES</option>
+                                                    <option value="SELESAI">SELESAI</option>
+                                                </select>
+                                            </div>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -276,48 +320,41 @@ export default function AdminDashboard() {
                 )}
             </main>
 
-            {/* MODAL FORM TAMBAH/EDIT */}
+            {/* MODAL FORM */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-[#0a0a0a] border border-white/10 w-full max-w-md p-8 relative shadow-2xl">
                         <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
                             <X size={20} />
                         </button>
-
                         <h2 className="text-2xl font-black uppercase italic mb-6 tracking-tighter">
                             {isEditMode ? 'Edit' : 'Tambah'} <span className="text-orange-500">Varian</span>
                         </h2>
-
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            {/* Nama */}
                             <div>
                                 <label className="text-[9px] uppercase font-bold text-gray-500 tracking-widest">Nama Produk</label>
                                 <input
                                     type="text" required
                                     placeholder="Contoh: Kanopi Atap Alderon"
-                                    className="w-full bg-white/5 border border-white/10 p-3 mt-1 text-sm focus:outline-none focus:border-orange-500 transition-colors"
+                                    className="w-full bg-white/5 border border-white/10 p-3 mt-1 text-sm focus:outline-none focus:border-orange-500"
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 />
                             </div>
-
                             <div className="grid grid-cols-2 gap-4">
-                                {/* Kategori */}
                                 <div>
                                     <label className="text-[9px] uppercase font-bold text-gray-500 tracking-widest">Kategori</label>
                                     <select
-                                        className="w-full bg-[#111111] text-white border border-white/10 p-3 mt-1 text-sm focus:outline-none focus:border-orange-500 appearance-none cursor-pointer"
+                                        className="w-full bg-[#111111] text-white border border-white/10 p-3 mt-1 text-sm focus:outline-none focus:border-orange-500"
                                         value={formData.category}
                                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                     >
-                                        {/* Tambahkan gaya bg-zinc-900 pada option agar teks putih terlihat kontras saat dropdown terbuka */}
-                                        <option value="Kanopi" className="bg-zinc-900 text-white">Kanopi</option>
-                                        <option value="Pagar" className="bg-zinc-900 text-white">Pagar</option>
-                                        <option value="Tralis" className="bg-zinc-900 text-white">Tralis</option>
-                                        <option value="Pintu Besi" className="bg-zinc-900 text-white">Pintu Besi</option>
+                                        <option value="Kanopi">Kanopi</option>
+                                        <option value="Pagar">Pagar</option>
+                                        <option value="Tralis">Tralis</option>
+                                        <option value="Pintu Besi">Pintu Besi</option>
                                     </select>
                                 </div>
-                                {/* Harga */}
                                 <div>
                                     <label className="text-[9px] uppercase font-bold text-gray-500 tracking-widest">Harga /m²</label>
                                     <input
@@ -329,31 +366,26 @@ export default function AdminDashboard() {
                                     />
                                 </div>
                             </div>
-
-                            {/* Keterangan Produk */}
                             <div>
                                 <label className="text-[9px] uppercase font-bold text-gray-500 tracking-widest">Keterangan Produk</label>
                                 <textarea
                                     rows={3}
-                                    placeholder="Spesifikasi bahan, jenis cat, dll..."
+                                    placeholder="Spesifikasi bahan..."
                                     className="w-full bg-white/5 border border-white/10 p-3 mt-1 text-sm focus:outline-none focus:border-orange-500 resize-none"
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 />
                             </div>
-
-                            {/* URL Gambar */}
                             <div>
                                 <label className="text-[10px] uppercase font-bold text-gray-500 tracking-widest">URL Gambar</label>
                                 <input
                                     type="text" required
                                     placeholder="https://..."
-                                    className="w-full bg-white/5 border border-white/10 p-3 mt-1 text-sm font-mono text-[15px] focus:outline-none focus:border-orange-500"
+                                    className="w-full bg-white/5 border border-white/10 p-3 mt-1 text-sm font-mono focus:outline-none focus:border-orange-500"
                                     value={formData.image}
                                     onChange={(e) => setFormData({ ...formData, image: e.target.value })}
                                 />
                             </div>
-
                             <button type="submit" className="w-full bg-orange-500 text-black py-4 font-black uppercase text-[10px] tracking-[0.2em] hover:bg-white transition-colors mt-4 flex items-center justify-center gap-2">
                                 <Save size={16} /> {isEditMode ? 'Simpan Perubahan' : 'Tambahkan Produk'}
                             </button>
