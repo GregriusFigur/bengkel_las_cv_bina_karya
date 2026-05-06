@@ -252,11 +252,22 @@ export default function AdminDashboard() {
                                         <td className="p-6 font-black text-white text-sm italic">
                                             Rp {Number(order.total_harga).toLocaleString('id-ID')}
                                         </td>
-                                        <td className="p-6 text-right">
-                                            <span className="bg-orange-500/10 text-orange-500 border border-orange-500/20 px-3 py-1 text-[9px] font-black uppercase">
-                                                {order.status || 'PENDING'}
-                                            </span>
-                                        </td>
+                                        <select
+                                            value={order.status}
+                                            onChange={async (e) => {
+                                                const res = await fetch('/api/orders', {
+                                                    method: 'PATCH',
+                                                    body: JSON.stringify({ id: order.id, status: e.target.value })
+                                                });
+                                                if (res.ok) alert("Status diperbarui & WA terkirim!");
+                                            }}
+                                            className="bg-[#111111] text-orange-500 text-[10px] font-bold p-2 border border-white/10"
+                                        >
+                                            <option value="PENDING">PENDING</option>
+                                            <option value="DITERIMA">PESANAN DITERIMA</option>
+                                            <option value="PROSES">PROSES PENGERJAAN</option>
+                                            <option value="SELESAI">SELESAI</option>
+                                        </select>
                                     </tr>
                                 ))}
                             </tbody>
