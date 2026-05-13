@@ -24,7 +24,7 @@ type Product = {
   image: string;
 };
 
-const CATEGORIES_LIST = ['Kanopi', 'Pagar', 'Teralis', 'Pintu Besi'];
+const CATEGORIES_LIST = ['Kanopi', 'Pagar',];
 
 function KalkulatorContent() {
   const searchParams = useSearchParams();

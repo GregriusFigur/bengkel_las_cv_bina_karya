@@ -351,8 +351,8 @@ export default function AdminDashboard() {
                                     >
                                         <option value="Kanopi">Kanopi</option>
                                         <option value="Pagar">Pagar</option>
-                                        <option value="Tralis">Tralis</option>
-                                        <option value="Pintu Besi">Pintu Besi</option>
+                                        <option value="Furnitur">Furnitur (Harga Tetap)</option>
+
                                     </select>
                                 </div>
                                 <div>
